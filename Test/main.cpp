@@ -19,7 +19,7 @@
 
 #define SERVER "127.0.0.1"  //ip address of udp server
 #define BUFLEN 283  //Max length of buffer
-#define SouPORT 56000
+#define SouPORT 14550
 
 #pragma comment(lib,"ws2_32.lib") //Winsock Library
 
@@ -43,6 +43,14 @@ int main(int argc, char** argv) {
     unsigned int temp = 0;
     ssize_t receive;   
     mavlink_attitude_t attitude;
+    mavlink_local_position_ned_t local_position_ned;
+    mavlink_att_pos_mocap_t att_pos_mocap;
+    mavlink_distance_sensor_t distance_sensor;
+    mavlink_global_position_int_t global_position_int;
+    
+    
+    closesocket(s);
+    
     
     //Prepare the sockaddr_in structure
     memset((char *) &server, 0, sizeof(s));
@@ -73,7 +81,8 @@ int main(int argc, char** argv) {
     }
     printf("Bind done.\n");
     //Send some data
-    while(1){
+    int sair = 1;
+        while(sair == 1){
        // message = "Olahi";
         // Sleep(1000);
          
@@ -106,10 +115,22 @@ int main(int argc, char** argv) {
 //                printf("\nReceived packet: SYS: %u, COMP: %u, LEN: %u, MSG ID: %u", msg.sysid, msg.compid, msg.len, msg.msgid);
 //                cout << " Payload: " << msg.payload64 << " \n\n";
                 mavlink_msg_attitude_encode(1, 200, &msg, &attitude);
-                cout << "Yaw: " << attitude.yaw << " Pitch:" << attitude.pitch << "Roll: " << attitude.roll << endl;
-              
+//                cout << "Yaw: " << attitude.yaw << " Pitch:" << attitude.pitch << "Roll: " << attitude.roll << endl;
+               mavlink_msg_local_position_ned_decode( &msg, &local_position_ned);
+               //cout <<" Position z: "<< local_position_ned.z << endl << "Position x: "<< local_position_ned.x << endl <<
+               //        "Position y: " << local_position_ned.y << endl << endl;
+//               mavlink_msg_att_pos_mocap_decode(&msg, &att_pos_mocap);
+//               cout << cout <<" Position z: "<< att_pos_mocap.z << endl << "Position x: "<< att_pos_mocap.x << endl <<
+//                       "Position y: " << att_pos_mocap.y << endl << endl;
+//               mavlink_msg_distance_sensor_decode(&msg, &distance_sensor);
+//               cout << "Distance: " << distance_sensor.current_distance << endl<< endl;
+//               mavlink_msg_global_position_int_decode(&msg, &global_position_int);
+//               cout << "Altitude: " << global_position_int.alt << endl << "Relative altitude: " << global_position_int.relative_alt << endl<<endl;
             }
         }
+               mavlink_msg_global_position_int_decode(&msg, &global_position_int);
+               cout << "Altitude: " << global_position_int.alt << endl << "Relative altitude: " << global_position_int.relative_alt << endl<<endl;
+    cin >> sair;    
     }
     
     puts(buf);
