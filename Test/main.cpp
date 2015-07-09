@@ -75,24 +75,24 @@ int main(int argc, char** argv) {
     printf("Socket created.\n");
     
     //Bind
-   if( bind(s ,(struct sockaddr *)&server , sizeof(server)) == SOCKET_ERROR)
+    if( bind(s ,(struct sockaddr *)&server , sizeof(server)) == SOCKET_ERROR)
     {
         printf("Bind failed with error code : %d" , WSAGetLastError());
     }
     printf("Bind done.\n");
     //Send some data
-    int sair = 1;
-        while(sair == 1){
-       // message = "Olahi";
+    int sair = 0;
+    while(msg.msgid != 33){
+        // message = "Olahi";
         // Sleep(1000);
-         
+        
         // if (sendto(s, message, strlen(message) , 0 , (struct sockaddr *) &server, slen) == SOCKET_ERROR)
-         //{
+        //{
         // printf("sendto() failed with error code : %d" , WSAGetLastError());
         // exit(EXIT_FAILURE);
         // }
         // puts(buf);
-         
+        
         //receive a reply and print it
         //clear the buffer by filling null, it might have previously received data
         memset(buf,'\0', BUFLEN);
@@ -104,33 +104,54 @@ int main(int argc, char** argv) {
             printf("recvfrom() failed with error code : %d" , WSAGetLastError());
             exit(EXIT_FAILURE);
         }
-        
         cout << "Bytes Received: " << (int)receive << "\nDatagram:\n";
         for (int i = 0; i < receive; ++i)
         {
-            temp = buf[i];
-//            printf("%02x ", (unsigned char)temp);
-            if (mavlink_parse_char(MAVLINK_COMM_0, buf[i], &msg, &status))
+            if (mavlink_frame_char(MAVLINK_COMM_0, buf[i], &msg, &status) != MAVLINK_FRAMING_INCOMPLETE)
             {
-//                printf("\nReceived packet: SYS: %u, COMP: %u, LEN: %u, MSG ID: %u", msg.sysid, msg.compid, msg.len, msg.msgid);
-//                cout << " Payload: " << msg.payload64 << " \n\n";
-                mavlink_msg_attitude_encode(1, 200, &msg, &attitude);
-//                cout << "Yaw: " << attitude.yaw << " Pitch:" << attitude.pitch << "Roll: " << attitude.roll << endl;
-               mavlink_msg_local_position_ned_decode( &msg, &local_position_ned);
-               //cout <<" Position z: "<< local_position_ned.z << endl << "Position x: "<< local_position_ned.x << endl <<
-               //        "Position y: " << local_position_ned.y << endl << endl;
-//               mavlink_msg_att_pos_mocap_decode(&msg, &att_pos_mocap);
-//               cout << cout <<" Position z: "<< att_pos_mocap.z << endl << "Position x: "<< att_pos_mocap.x << endl <<
-//                       "Position y: " << att_pos_mocap.y << endl << endl;
-//               mavlink_msg_distance_sensor_decode(&msg, &distance_sensor);
-//               cout << "Distance: " << distance_sensor.current_distance << endl<< endl;
-//               mavlink_msg_global_position_int_decode(&msg, &global_position_int);
-//               cout << "Altitude: " << global_position_int.alt << endl << "Relative altitude: " << global_position_int.relative_alt << endl<<endl;
+                printf("Received message with ID %d, sequence: %d from component %d of system %d", msg.msgid, msg.seq, msg.compid, msg.sysid);
+                if (msg.msgid == 33)
+                {
+                    mavlink_msg_global_position_int_decode(&msg, &global_position_int);
+                    cout << endl<< endl << "Altitude: " << global_position_int.alt << endl << "Relative altitude: " << global_position_int.relative_alt << endl<<endl;
+                }
             }
         }
-               mavlink_msg_global_position_int_decode(&msg, &global_position_int);
-               cout << "Altitude: " << global_position_int.alt << endl << "Relative altitude: " << global_position_int.relative_alt << endl<<endl;
-    cin >> sair;    
+        
+       
+//        for (int i = 0; i < receive; ++i)
+//        {
+//            temp = buf[i];
+//                        printf("%02x ", (unsigned char)temp);
+//            if (mavlink_parse_char(MAVLINK_COMM_0, buf[i], &msg, &status))
+//            {
+//                                printf("\nReceived packet: SYS: %u, COMP: %u, LEN: %u, MSG ID: %u", msg.sysid, msg.compid, msg.len, msg.msgid);
+//                                cout << " Payload: " << msg.payload64 << " \n\n";
+//                mavlink_msg_attitude_encode(1, 200, &msg, &attitude);
+//                                cout << "Yaw: " << attitude.yaw << " Pitch:" << attitude.pitch << "Roll: " << attitude.roll << endl;
+//                mavlink_msg_local_position_ned_decode( &msg, &local_position_ned);
+//                cout <<" Position z: "<< local_position_ned.z << endl << "Position x: "<< local_position_ned.x << endl <<
+//                        "Position y: " << local_position_ned.y << endl << endl;
+//                               mavlink_msg_att_pos_mocap_decode(&msg, &att_pos_mocap);
+//                               cout << cout <<" Position z: "<< att_pos_mocap.z << endl << "Position x: "<< att_pos_mocap.x << endl <<
+//                                       "Position y: " << att_pos_mocap.y << endl << endl;
+//                               mavlink_msg_distance_sensor_decode(&msg, &distance_sensor);
+//                               cout << "Distance: " << distance_sensor.current_distance << endl<< endl;
+//                
+//                if (msg.sysid == 33)   
+//                {
+//                    mavlink_msg_global_position_int_decode(&msg, &global_position_int);
+//                    cout << "Altitude: " << global_position_int.alt << endl << "Relative altitude: " << global_position_int.relative_alt << endl<<endl;
+//                }
+//            }
+//            
+//        }
+//        mavlink_msg_global_position_int_decode(&msg, &global_position_int);
+//        cout << "Altitude: " << global_position_int.alt << endl << "Relative altitude: " << global_position_int.relative_alt << endl<<endl;
+//        cin >> sair;
+        sair++;
+            //if(sair == 10) break;
+
     }
     
     puts(buf);
