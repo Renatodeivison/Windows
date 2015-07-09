@@ -19,7 +19,7 @@
 
 #define SERVER "127.0.0.1"  //ip address of udp server
 #define BUFLEN 283  //Max length of buffer
-#define SouPORT 14550
+#define SouPORT 14551
 
 #pragma comment(lib,"ws2_32.lib") //Winsock Library
 
@@ -37,9 +37,9 @@ int main(int argc, char** argv) {
     int slen;
     unsigned int temp = 0;
     char buf[BUFLEN];
-    char *message;
     slen = sizeof(server);
-    ssize_t receive; 
+    ssize_t receive;
+    uint8_t buffer;
     
     
     mavlink_message_t msg;
@@ -75,8 +75,15 @@ int main(int argc, char** argv) {
     }
     printf("Bind done.\n");
     
+    global_position_int.alt = 50000;
+    mavlink_msg_global_position_int_encode(1, 33, &msg, &global_position_int);
+    mavlink_msg_to_send_buffer((uint8_t *)&buf, &msg);
     
-    while(msg.msgid != 33){
+        // Send an initial buffer
+    send( s, buf, (int)strlen(buf), 0 );
+
+    int sair = 0;    
+    while(true){
         memset(buf,'\0', BUFLEN);
         
         //try to receive some data, this is a blocking call
@@ -104,13 +111,14 @@ int main(int argc, char** argv) {
             }
             else if(mavlink_frame_char(MAVLINK_COMM_0, buf[i], &msg, &status) == MAVLINK_FRAMING_INCOMPLETE)
             {
-                cout <<endl<<endl<< "Mavlink Frame incomplete."<<endl<<endl<<;
+                cout <<endl<<endl<< "Mavlink Frame incomplete."<<endl<<endl;
             }
             else
             {
-                cout <<endl<<endl<< "Mavlink Frame Bad CRC."<<endl<<endl<<;
+                cout <<endl<<endl<< "Mavlink Frame Bad CRC."<<endl<<endl;
             }
         }
+     sair++; if (sair == 100) break;    
     }      
     
     WSACleanup();
