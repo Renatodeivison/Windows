@@ -102,8 +102,16 @@ int main(int argc, char** argv) {
                         break;
                 }
             }
-        }      
-    }
+            else if(mavlink_frame_char(MAVLINK_COMM_0, buf[i], &msg, &status) == MAVLINK_FRAMING_INCOMPLETE)
+            {
+                cout <<endl<<endl<< "Mavlink Frame incomplete."<<endl<<endl<<;
+            }
+            else
+            {
+                cout <<endl<<endl<< "Mavlink Frame Bad CRC."<<endl<<endl<<;
+            }
+        }
+    }      
     
     WSACleanup();
     closesocket(s);
