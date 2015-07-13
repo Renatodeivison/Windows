@@ -19,7 +19,7 @@
 
 #define SERVER "127.0.0.1"  //ip address of udp server
 #define BUFLEN 283  //Max length of buffer
-#define SouPORT 14551
+#define SouPORT 14551 
 
 #pragma comment(lib,"ws2_32.lib") //Winsock Library
 
@@ -75,12 +75,15 @@ int main(int argc, char** argv) {
     }
     printf("Bind done.\n");
     
-    global_position_int.alt = 50000;
-    mavlink_msg_global_position_int_encode(1, 33, &msg, &global_position_int);
-    mavlink_msg_to_send_buffer((uint8_t *)&buf, &msg);
-    
-        // Send an initial buffer
-    send( s, buf, (int)strlen(buf), 0 );
+//    global_position_int.alt = 50000;
+//    global_position_int.vx = 4;
+//    global_position_int.vy = 0;
+//    global_position_int.vz = 0;
+//    mavlink_msg_global_position_int_encode(1, 33, &msg, &global_position_int);
+//    mavlink_msg_to_send_buffer((uint8_t *)&buf, &msg);
+//    
+//        // Send an initial buffer
+//    send( s, buf, (int)strlen(buf), 0 );
 
     int sair = 0;    
     while(true){
@@ -98,7 +101,7 @@ int main(int argc, char** argv) {
         
         for (int i = 0; i < receive; ++i)
         {
-            if (mavlink_frame_char(MAVLINK_COMM_0, buf[i], &msg, &status) != MAVLINK_FRAMING_INCOMPLETE)
+            if (mavlink_frame_char(MAVLINK_COMM_0, buf[i], &msg, &status) == MAVLINK_FRAMING_INCOMPLETE)
             {
                 printf("Received message with ID %d, sequence: %d from component %d of system %d", msg.msgid, msg.seq, msg.compid, msg.sysid);
                 switch (msg.msgid)
@@ -109,16 +112,16 @@ int main(int argc, char** argv) {
                         break;
                 }
             }
-            else if(mavlink_frame_char(MAVLINK_COMM_0, buf[i], &msg, &status) == MAVLINK_FRAMING_INCOMPLETE)
-            {
-                cout <<endl<<endl<< "Mavlink Frame incomplete."<<endl<<endl;
-            }
-            else
-            {
-                cout <<endl<<endl<< "Mavlink Frame Bad CRC."<<endl<<endl;
-            }
+//            else if(mavlink_frame_char(MAVLINK_COMM_0, buf[i], &msg, &status) == MAVLINK_FRAMING_INCOMPLETE)
+//            {
+//                cout <<endl<<endl<< "***Mavlink Frame incomplete.***"<<endl<<endl;
+//            }
+//            else
+//            {
+//                cout <<endl<<endl<< "***Mavlink Frame Bad CRC.***"<<endl<<endl;
+//            }
         }
-     sair++; if (sair == 100) break;    
+     sair++; if (sair == 10) break;    
     }      
     
     WSACleanup();
