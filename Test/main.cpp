@@ -45,6 +45,9 @@ int main(int argc, char** argv) {
     mavlink_message_t msg;
     mavlink_status_t status;
     mavlink_global_position_int_t global_position_int;
+    mavlink_vicon_position_estimate_t vicon_position_estimate;
+    mavlink_vfr_hud_t vfr_hud;
+    mavlink_attitude_t attitude;
     
     //Prepare the sockaddr_in structure
     memset((char *) &server, 0, sizeof(s));
@@ -85,7 +88,9 @@ int main(int argc, char** argv) {
 //        // Send an initial buffer
 //    send( s, buf, (int)strlen(buf), 0 );
 
-    int sair = 0;    
+    int sair = 0;
+    int a = 0;
+    int b,c,d;
     while(true){
         memset(buf,'\0', BUFLEN);
         
@@ -97,19 +102,34 @@ int main(int argc, char** argv) {
             exit(EXIT_FAILURE);
         }
         
-        cout << "Bytes Received: " << (int)receive << "\nDatagram:\n";
+        //cout << "Bytes Received: " << (int)receive << "\nDatagram:\n";
         
         for (int i = 0; i < receive; ++i)
         {
             if (mavlink_frame_char(MAVLINK_COMM_0, buf[i], &msg, &status) == MAVLINK_FRAMING_INCOMPLETE)
             {
-                printf("Received message with ID %d, sequence: %d from component %d of system %d", msg.msgid, msg.seq, msg.compid, msg.sysid);
+                //printf("Received message with ID %d, sequence: %d from component %d of system %d\n\n", msg.msgid, msg.seq, msg.compid, msg.sysid);
                 switch (msg.msgid)
                 {
                     case 33:
                         mavlink_msg_global_position_int_decode(&msg, &global_position_int);
-                        cout << endl<< endl << "Altitude: " << global_position_int.alt << endl << "Relative altitude: " << global_position_int.relative_alt << endl<<endl;
+                        cout << endl<< endl << "Altitude: " << global_position_int.alt/1000 << endl << "Relative altitude: " << global_position_int.relative_alt/1000 <<endl<<endl;
+                        b = 1;
+                        a = b + c + d;
                         break;
+                    case 30:
+                        mavlink_msg_attitude_decode(&msg, &attitude);
+                        cout << endl<< endl << "Roll angle (rad): " << attitude.roll*57.2957795131 << endl << "Pitch angle (rad): " << attitude.pitch*57.2957795131 << endl << "Yaw angle (rad): "<< attitude.yaw*57.2957795131 <<endl<<endl;
+                        c = 1;
+                        a = b + c + d;
+                        break;
+                    case 74:
+                        mavlink_msg_vfr_hud_decode( &msg, &vfr_hud);
+                        cout << endl<< endl << "Airspeed(m/s): " << vfr_hud.airspeed << endl << "Ground speed(m/s): " << vfr_hud.groundspeed <<  endl << endl;
+                        d = 1;
+                        a = b + c + d;
+                        break;
+                        
                 }
             }
 //            else if(mavlink_frame_char(MAVLINK_COMM_0, buf[i], &msg, &status) == MAVLINK_FRAMING_INCOMPLETE)
@@ -121,7 +141,8 @@ int main(int argc, char** argv) {
 //                cout <<endl<<endl<< "***Mavlink Frame Bad CRC.***"<<endl<<endl;
 //            }
         }
-     sair++; if (sair == 10) break;    
+        Sleep(1000);
+     sair++; if (a == 3) break;    
     }      
     
     WSACleanup();
